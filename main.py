@@ -12,4 +12,4 @@ app.include_router(temperature_router.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello World"}
+    return {"message": "It`s work"}

@@ -6,9 +6,5 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str | None = "sqlite+aiosqlite:///./db.db"
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-
 
 settings = Settings()
