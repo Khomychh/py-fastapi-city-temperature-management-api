@@ -20,9 +20,9 @@ async def get_all_temperatures(
 
 
 async def get_temperature_by_city_id(
-    db: AsyncSession, city_id: int
+    db: AsyncSession, city_id: int, skip: int = 0, limit: int = 100
 ) -> list[TemperatureRead]:
-    stmt = select(Temperature).where(Temperature.city_id == city_id)
+    stmt = select(Temperature).where(Temperature.city_id == city_id).offset(skip).limit(limit)
     result = await db.execute(stmt)
     result = result.scalars().all()
     return result

@@ -24,7 +24,7 @@ async def create_city(db: AsyncSession, city_in: CityCreate) -> CityRead:
     await db.refresh(city)
 
     return CityRead(
-        id=city.id, name=city.name, additional_info=city.additional_info, temperature=None
+        id=city.id, name=city.name, additional_info=city.additional_info
     )
 
 

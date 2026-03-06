@@ -40,7 +40,10 @@ async def read_city(
     db: Annotated[AsyncSession, Depends(get_db)],
     city_id: int,
 ):
-    return await crud.get_city(db=db, city_id=city_id)
+    city = await crud.get_city(db=db, city_id=city_id)
+    if not city:
+        raise HTTPException(status_code=404, detail="City not found")
+    return city
 
 
 @router.patch("/cities/{city_id}", response_model=CityRead)

@@ -27,7 +27,12 @@ async def list_temperatures(
     city_id: int | None = None,
 ) -> list[TemperatureRead]:
     if city_id:
-        temperature = await crud.get_temperature_by_city_id(db=db, city_id=city_id)
+        temperature = await crud.get_temperature_by_city_id(
+            db=db,
+            city_id=city_id,
+            skip=pagination.skip,
+            limit=pagination.limit,
+        )
         return temperature
 
     return await crud.get_all_temperatures(
