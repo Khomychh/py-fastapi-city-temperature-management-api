@@ -14,6 +14,8 @@ router = APIRouter()
 class UpdateTemperaturesResponse(BaseModel):
     message: str
     updated: int
+    unupdated: int = 0
+    error: list[str] = []
 
 
 @router.get("/temperatures", response_model=list[TemperatureRead])
@@ -39,15 +41,11 @@ async def list_temperatures(
 async def update_all_temperatures(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> UpdateTemperaturesResponse:
-    try:
-        updated_count = await crud.update_all_temperatures(db=db)
-    except Exception as e:
-        raise HTTPException(
-            status_code=503,
-            detail=f"Error: {e}",
-        ) from e
+    updated_count, errors = await crud.update_all_temperatures(db=db)
 
     return UpdateTemperaturesResponse(
         message="Temperatures updated successfully",
         updated=updated_count,
+        unupdated=len(errors),
+        error=errors,
     )

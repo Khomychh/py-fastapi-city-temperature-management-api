@@ -10,12 +10,15 @@ from dependencies import get_db, Pagination, pagination_params
 
 router = APIRouter()
 
+
 @router.get("/cities", response_model=list[CityRead])
 async def list_cities(
     db: Annotated[AsyncSession, Depends(get_db)],
     pagination: Annotated[Pagination, Depends(pagination_params)],
 ) -> list[CityRead]:
-    return await crud.get_all_cities(db=db, skip=pagination.skip, limit=pagination.limit)
+    return await crud.get_all_cities(
+        db=db, skip=pagination.skip, limit=pagination.limit
+    )
 
 
 @router.post("/cities", response_model=CityRead)
@@ -26,8 +29,7 @@ async def create_city(
     existing_city = await crud.get_city_by_name(db=db, city_name=city_in.name)
     if existing_city:
         raise HTTPException(
-            status_code=400,
-            detail=f"City with name {city_in.name} already exists"
+            status_code=400, detail=f"City with name {city_in.name} already exists"
         )
 
     return await crud.create_city(db=db, city_in=city_in)
@@ -51,8 +53,7 @@ async def update_city(
         city = await crud.update_city(db=db, city_id=city_id, city_update=city_in)
     except IntegrityError:
         raise HTTPException(
-            status_code=409,
-            detail=f"City with name {city_in.name} already exists"
+            status_code=409, detail=f"City with name {city_in.name} already exists"
         )
 
     if city is None:

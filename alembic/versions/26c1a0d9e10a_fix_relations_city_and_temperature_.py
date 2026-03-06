@@ -1,8 +1,8 @@
-"""add back relation temperatures in city model
+"""fix: relations city and temperature models
 
-Revision ID: cdbcb8e4dde0
-Revises: 175ebb0821f8
-Create Date: 2026-03-05 20:27:59.756821
+Revision ID: 26c1a0d9e10a
+Revises: a3a8c0ebb03d
+Create Date: 2026-03-06 11:02:18.805144
 
 """
 
@@ -12,8 +12,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision: str = "cdbcb8e4dde0"
-down_revision: Union[str, Sequence[str], None] = "175ebb0821f8"
+revision: str = "26c1a0d9e10a"
+down_revision: Union[str, Sequence[str], None] = "a3a8c0ebb03d"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

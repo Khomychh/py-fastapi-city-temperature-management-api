@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -17,9 +18,17 @@ class CityUpdate(CityBase):
     description: Optional[str] = None
 
 
+class TemperatureNestedRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    temperature: float
+    data_time: datetime
+
+
 class CityRead(CityBase):
     model_config = ConfigDict(
         from_attributes=True,
     )
 
     id: int
+    temperature: TemperatureNestedRead | None = None

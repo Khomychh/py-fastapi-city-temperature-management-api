@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from city.models import City
-from integrations.weatherapi import get_temperature_value
+from integrations.weatherapi import get_temperatures_for_cities
 from temperature.models import Temperature
 from temperature.schemas import TemperatureRead, TemperatureUpdate
 
@@ -27,38 +27,35 @@ async def get_temperature_by_city_id(
     return result.scalar_one_or_none()
 
 
-async def update_or_create_temperature(db: AsyncSession, city: City) -> None:
-    data_task = asyncio.create_task(get_temperature_value(city))
+async def update_all_temperatures(db: AsyncSession) -> tuple[int, list[str]]:
+    cities_stmt = select(City)
+    cities_result = await db.execute(cities_stmt)
+    cities = cities_result.scalars().all()
 
-    stmt = select(Temperature).where(Temperature.city_id == city.id)
-    temperature = await db.execute(stmt)
-    temperature = temperature.scalar_one_or_none()
+    if not cities:
+        return 0, []
 
-    try:
-        data = await data_task
-    except Exception as e:
-        raise RuntimeError(
-            f"Failed to fetch temperatures from external service. Error: {e}"
-        )
+    fetched_temperatures, errors = await get_temperatures_for_cities(
+        cities=cities, concurrency_limit=10
+    )
 
-    if temperature:
-        temperature.temperature = data.temperature
-        temperature.data_time = data.data_time
-        db.add(temperature)
-    else:
-        temperature = Temperature(
-            city_id=city.id, temperature=data.temperature, data_time=data.data_time
-        )
-        db.add(temperature)
+    existing_temperatures = await db.scalars(select(Temperature))
+    existing_temperatures = existing_temperatures.all()
 
+    temperature_by_city_id = {t.city_id: t for t in existing_temperatures}
 
-async def update_all_temperatures(db: AsyncSession) -> int:
-    stmt = select(City)
-    cities = await db.execute(stmt)
-    cities = cities.scalars().all()
-
-    for city in cities:
-        await update_or_create_temperature(db=db, city=city)
+    for item in fetched_temperatures:
+        existing_temperature = temperature_by_city_id.get(item.city_id)
+        if existing_temperature:
+            existing_temperature.temperature = item.temperature
+            existing_temperature.data_time = item.data_time
+        else:
+            temperature = Temperature(
+                city_id=item.city_id,
+                temperature=item.temperature,
+                data_time=item.data_time,
+            )
+            db.add(temperature)
 
     await db.commit()
-    return len(cities)
+    return len(cities), errors

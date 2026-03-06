@@ -1,8 +1,9 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from city.models import City
-from city.schemas import CityCreate, CityUpdate
+from city.schemas import CityCreate, CityUpdate, CityRead
 
 
 async def get_all_cities(
@@ -10,18 +11,22 @@ async def get_all_cities(
     skip: int = 0,
     limit: int = 100,
 ):
-    stmt = select(City).offset(skip).limit(limit)
+    stmt = (
+        select(City).options(selectinload(City.temperature)).offset(skip).limit(limit)
+    )
     result = await db.execute(stmt)
     return result.scalars().all()
 
 
-async def create_city(db: AsyncSession, city_in: CityCreate) -> City:
+async def create_city(db: AsyncSession, city_in: CityCreate) -> CityRead:
     city = City(name=city_in.name, description=city_in.description)
     db.add(city)
     await db.commit()
     await db.refresh(city)
 
-    return city
+    return CityRead(
+        id=city.id, name=city.name, description=city.description, temperature=None
+    )
 
 
 async def get_city(db: AsyncSession, city_id: int) -> City | None:
@@ -36,7 +41,9 @@ async def get_city_by_name(db: AsyncSession, city_name: str) -> City | None:
     return result.scalar_one_or_none()
 
 
-async def update_city(db: AsyncSession, city_id: int, city_update: CityUpdate) -> City | None:
+async def update_city(
+    db: AsyncSession, city_id: int, city_update: CityUpdate
+) -> City | None:
     result = await db.execute(select(City).where(City.id == city_id))
     city = result.scalar_one_or_none()
     if city is None:

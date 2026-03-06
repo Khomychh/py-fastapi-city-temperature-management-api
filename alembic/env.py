@@ -21,8 +21,8 @@ if config.config_file_name is not None:
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! URL IS TAKEN FROM SETTINGS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
-from city.models import * # noqa
-from temperature.models import * # noqa`
+from city.models import *  # noqa
+from temperature.models import *  # noqa`
 from database import Base
 
 target_metadata = Base.metadata
