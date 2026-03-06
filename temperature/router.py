@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from temperature import crud
@@ -8,6 +9,12 @@ from dependencies import get_db, Pagination, pagination_params
 from temperature.schemas import TemperatureRead
 
 router = APIRouter()
+
+
+class UpdateTemperaturesResponse(BaseModel):
+    message: str
+    updated: int
+
 
 @router.get("/temperatures", response_model=list[TemperatureRead])
 async def list_temperatures(
@@ -18,7 +25,29 @@ async def list_temperatures(
     if city_id:
         temperature = await crud.get_temperature_by_city_id(db=db, city_id=city_id)
         if temperature is None:
-            raise HTTPException(status_code=404, detail="Temperature for this city not found")
+            raise HTTPException(
+                status_code=404, detail="Temperature for this city not found"
+            )
         return temperature
 
-    return await crud.get_all_temperatures(db=db, skip=pagination.skip, limit=pagination.limit)
+    return await crud.get_all_temperatures(
+        db=db, skip=pagination.skip, limit=pagination.limit
+    )
+
+
+@router.post("/temperatures/update")
+async def update_all_temperatures(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UpdateTemperaturesResponse:
+    try:
+        updated_count = await crud.update_all_temperatures(db=db)
+    except Exception as e:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Error: {e}",
+        ) from e
+
+    return UpdateTemperaturesResponse(
+        message="Temperatures updated successfully",
+        updated=updated_count,
+    )
