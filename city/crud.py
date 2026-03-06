@@ -1,6 +1,5 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from city.models import City
 from city.schemas import CityCreate, CityUpdate, CityRead
@@ -12,20 +11,20 @@ async def get_all_cities(
     limit: int = 100,
 ):
     stmt = (
-        select(City).options(selectinload(City.temperature)).offset(skip).limit(limit)
+        select(City).offset(skip).limit(limit)
     )
     result = await db.execute(stmt)
     return result.scalars().all()
 
 
 async def create_city(db: AsyncSession, city_in: CityCreate) -> CityRead:
-    city = City(name=city_in.name, description=city_in.description)
+    city = City(name=city_in.name, additional_info=city_in.additional_info)
     db.add(city)
     await db.commit()
     await db.refresh(city)
 
     return CityRead(
-        id=city.id, name=city.name, description=city.description, temperature=None
+        id=city.id, name=city.name, additional_info=city.additional_info, temperature=None
     )
 
 

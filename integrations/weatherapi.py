@@ -5,7 +5,7 @@ import httpx
 from dotenv import load_dotenv
 
 from city.models import City
-from temperature.schemas import TemperatureUpdate
+from temperature.schemas import TemperatureCreate
 
 load_dotenv()
 
@@ -17,7 +17,7 @@ async def get_temperature_value(
     city: City,
     client: httpx.AsyncClient,
     semaphore: asyncio.Semaphore,
-) -> TemperatureUpdate:
+) -> TemperatureCreate:
     if not API_KEY:
         raise RuntimeError("API key for weatherapi not found")
 
@@ -33,10 +33,10 @@ async def get_temperature_value(
             response.raise_for_status()
             res = response.json()
 
-        return TemperatureUpdate(
+        return TemperatureCreate(
             city_id=city.id,
             temperature=res["current"]["temp_c"],
-            data_time=res["current"]["last_updated"],
+            date_time=res["current"]["last_updated"],
         )
     except httpx.HTTPError as exc:
         raise RuntimeError(
@@ -47,7 +47,7 @@ async def get_temperature_value(
 async def get_temperatures_for_cities(
     cities: list[City],
     concurrency_limit: int = 10,
-) -> tuple[list[TemperatureUpdate], list[str]]:
+) -> tuple[list[TemperatureCreate], list[str]]:
     if concurrency_limit < 1:
         raise ValueError("concurrency_limit must be >= 1")
     if not API_KEY:
@@ -65,7 +65,7 @@ async def get_temperatures_for_cities(
         ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    temperatures: list[TemperatureUpdate] = []
+    temperatures: list[TemperatureCreate] = []
     errors: list[str] = []
 
     for city, result in zip(cities, results):

@@ -25,7 +25,7 @@ async def list_cities(
 async def create_city(
     db: Annotated[AsyncSession, Depends(get_db)],
     city_in: CityCreate,
-) -> Any:
+):
     existing_city = await crud.get_city_by_name(db=db, city_name=city_in.name)
     if existing_city:
         raise HTTPException(
@@ -39,7 +39,7 @@ async def create_city(
 async def read_city(
     db: Annotated[AsyncSession, Depends(get_db)],
     city_id: int,
-) -> Any:
+):
     return await crud.get_city(db=db, city_id=city_id)
 
 

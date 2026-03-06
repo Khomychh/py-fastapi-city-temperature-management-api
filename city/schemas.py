@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class CityBase(BaseModel):
     name: str = Field(min_length=1, max_length=100)
-    description: str | None = Field(default=None, max_length=511)
+    additional_info: str | None = Field(default=None, max_length=511)
 
 
 class CityCreate(CityBase):
@@ -15,14 +15,7 @@ class CityCreate(CityBase):
 
 class CityUpdate(CityBase):
     name: Optional[str] = None
-    description: Optional[str] = None
-
-
-class TemperatureNestedRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    temperature: float
-    data_time: datetime
+    additional_info: Optional[str] = None
 
 
 class CityRead(CityBase):
@@ -31,4 +24,3 @@ class CityRead(CityBase):
     )
 
     id: int
-    temperature: TemperatureNestedRead | None = None

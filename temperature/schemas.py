@@ -10,17 +10,11 @@ class TemperatureBase(BaseModel):
 
 
 class TemperatureCreate(TemperatureBase):
-    pass
-
-
-class TemperatureUpdate(BaseModel):
-    city_id: Optional[int] = None
-    data_time: Optional[datetime] = None
-    temperature: Optional[float] = None
+    date_time: Optional[datetime] = None
 
 
 class TemperatureRead(TemperatureBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    data_time: datetime
+    date_time: datetime

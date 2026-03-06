@@ -66,3 +66,7 @@ You can access the interactive API documentation (Swagger UI) at `http://127.0.0
 3. **Modular Structure**: The project is organized into `city` and `temperature` modules, each with its own models, schemas, and CRUD logic, promoting maintainability.
 4. **Dependency Injection**: Used for database session management and pagination parameters, making the code cleaner and easier to test.
 5. **External Service Integration**: Encapsulated WeatherAPI logic in `integrations/weatherapi.py` to decouple external dependencies from the core business logic.
+
+## Notes
+
+The original task description mentioned an optional `PUT` endpoint for updates. In this implementation, `PATCH` was used instead, since the update operation is partial rather than a full resource replacement. While this slightly deviates from the wording of the requirement, `PATCH` is a reasonable and semantically appropriate choice for this project.

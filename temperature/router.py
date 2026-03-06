@@ -25,13 +25,9 @@ async def list_temperatures(
     db: Annotated[AsyncSession, Depends(get_db)],
     pagination: Annotated[Pagination, Depends(pagination_params)],
     city_id: int | None = None,
-):
+) -> list[TemperatureRead]:
     if city_id:
         temperature = await crud.get_temperature_by_city_id(db=db, city_id=city_id)
-        if temperature is None:
-            raise HTTPException(
-                status_code=404, detail="Temperature for this city not found"
-            )
         return temperature
 
     return await crud.get_all_temperatures(
