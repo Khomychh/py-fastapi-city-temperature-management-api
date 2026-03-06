@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from temperature import crud
@@ -12,10 +12,12 @@ router = APIRouter()
 
 
 class UpdateTemperaturesResponse(BaseModel):
-    message: str
-    updated: int
-    unupdated: int = 0
-    error: list[str] = []
+    message: str = Field(..., description="Result message")
+    updated: int = Field(..., description="Number of cities successfully updated")
+    unupdated: int = Field(..., description="Number of cities that failed to update")
+    error: list[str] = Field(
+        ..., description="List of errors encountered during update"
+    )
 
 
 @router.get("/temperatures", response_model=list[TemperatureRead])
@@ -37,14 +39,26 @@ async def list_temperatures(
     )
 
 
-@router.post("/temperatures/update")
+@router.post(
+    "/temperatures/update",
+    summary="Update temperatures for all cities",
+    description=(
+        "Fetches current temperatures for all cities from the external weather API, "
+        "updates existing records, and returns statistics about successful and failed updates."
+    ),
+    response_description="Statistics about the temperature update process",
+)
 async def update_all_temperatures(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> UpdateTemperaturesResponse:
     updated_count, errors = await crud.update_all_temperatures(db=db)
 
     return UpdateTemperaturesResponse(
-        message="Temperatures updated successfully",
+        message=(
+            "Temperatures updated successfully"
+            if not errors
+            else "Temperatures updated partially"
+        ),
         updated=updated_count,
         unupdated=len(errors),
         error=errors,
